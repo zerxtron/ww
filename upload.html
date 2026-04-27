@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>上傳祝福 — 婚禮相簿</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="upload-page">
+
+  <div class="upload-header">
+    <h1>送上你的祝福 💌</h1>
+    <p>上傳照片或影片，即時出現在婚禮螢幕上</p>
+  </div>
+
+  <div class="upload-form-wrap">
+
+    <div id="error-msg" class="msg error"></div>
+
+    <form id="upload-form" novalidate>
+
+      <div class="field">
+        <label>照片 / 影片<span class="required">*</span></label>
+        <div class="file-drop-zone" id="drop-zone">
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/heic,.heic,.heif,video/mp4,.mp4" />
+          <div class="file-drop-icon">📷</div>
+          <div class="file-drop-text">
+            <strong>點此選擇</strong>或將檔案拖曳至此<br>
+            圖片：JPG / PNG / WEBP / HEIC<br>
+            影片：MP4（限 150 MB、3 分鐘以內）
+          </div>
+        </div>
+        <div id="file-preview-wrap"></div>
+        <div id="file-name-display"></div>
+      </div>
+
+      <div class="field">
+        <label for="uploader-name">你的名字<span class="optional">（選填）</span></label>
+        <input type="text" id="uploader-name" placeholder="小明、表哥、大學同學…" maxlength="30" />
+      </div>
+
+      <div class="field">
+        <label for="uploader-message">祝福話語<span class="required">*</span></label>
+        <textarea id="uploader-message" placeholder="寫下對新人的祝福吧！" maxlength="200" rows="4"></textarea>
+      </div>
+
+      <div id="progress-wrap">
+        <div id="progress-label">上傳中… 0%</div>
+        <div id="progress-bar-bg">
+          <div id="progress-bar"></div>
+        </div>
+      </div>
+
+      <button type="submit" id="submit-btn">送出祝福 ✨</button>
+
+    </form>
+
+  </div>
+
+  <div id="success-screen">
+    <div class="success-icon">🎊</div>
+    <h2>祝福已送達！</h2>
+    <p>你的祝福即將出現在婚禮螢幕上，<br>謝謝你的到來！</p>
+    <button id="upload-another-btn">再上傳一則</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <!-- HEIC 轉換 -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <!-- 設定 & 邏輯 -->
+  <script src="config.js"></script>
+  <script src="uploader.js"></script>
+</body>
+</html>
