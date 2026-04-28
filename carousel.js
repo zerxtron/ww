@@ -1,49 +1,36 @@
 (() => {
-  const CACHE_NAME = 'wedding-media-v1';
-  const queue = [];       // 已載入的媒體項目（依 createdAt 排序）
+  const queue = [];
   const seenKeys = new Set();
   let currentIndex = 0;
   let isPlaying = false;
   let timer = null;
 
-  const container   = document.getElementById('carousel-container');
-  const emptyState  = document.getElementById('empty-state');
-  const overlay     = document.getElementById('carousel-overlay');
-  const msgEl       = document.getElementById('carousel-message');
-  const nameEl      = document.getElementById('carousel-name');
-
-  // ── 快取工具 ──────────────────────────────────────────────
-  async function cachedFetch(url) {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(url);
-    if (cached) return URL.createObjectURL(await cached.blob());
-
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`fetch failed: ${resp.status}`);
-    await cache.put(url, resp.clone());
-    return URL.createObjectURL(await resp.blob());
-  }
+  const container  = document.getElementById('carousel-container');
+  const emptyState = document.getElementById('empty-state');
+  const overlay    = document.getElementById('carousel-overlay');
+  const msgEl      = document.getElementById('carousel-message');
+  const nameEl     = document.getElementById('carousel-name');
 
   // ── DOM 建立 ──────────────────────────────────────────────
-  function buildImageEl(blobUrl, item) {
+  function buildImageEl(url, item) {
     return new Promise((resolve, reject) => {
       const img = document.createElement('img');
-      img.id = 'carousel-media';
-      img.src = blobUrl;
+      img.id  = 'carousel-media';
+      img.src = url;
       img.alt = item.message || '';
       img.onload  = () => resolve(img);
       img.onerror = reject;
     });
   }
 
-  function buildVideoEl(blobUrl) {
+  function buildVideoEl(url) {
     const video = document.createElement('video');
-    video.id = 'carousel-media';
-    video.src = blobUrl;
-    video.muted = false;
-    video.autoplay = true;
+    video.id          = 'carousel-media';
+    video.src         = url;
+    video.muted       = false;
+    video.autoplay    = true;
     video.playsInline = true;
-    video.controls = false;
+    video.controls    = false;
     return video;
   }
 
@@ -52,30 +39,26 @@
     isPlaying = true;
     clearTimeout(timer);
 
-    let blobUrl;
-    try {
-      blobUrl = await cachedFetch(item.url);
-    } catch (e) {
-      console.error('媒體載入失敗，跳過', e);
-      advance();
-      return;
-    }
-
-    // 移除舊媒體元素
     const oldMedia = document.getElementById('carousel-media');
     if (oldMedia) oldMedia.remove();
 
     overlay.classList.remove('visible');
     emptyState.style.display = 'none';
 
-    let mediaEl;
     if (item.type === 'image') {
-      mediaEl = await buildImageEl(blobUrl, item);
+      let mediaEl;
+      try {
+        mediaEl = await buildImageEl(item.url, item);
+      } catch {
+        console.error('圖片載入失敗，跳過', item.url);
+        advance();
+        return;
+      }
       container.insertBefore(mediaEl, overlay);
       showOverlay(item);
       timer = setTimeout(advance, CONFIG.IMAGE_DISPLAY_SECONDS * 1000);
     } else {
-      mediaEl = buildVideoEl(blobUrl);
+      const mediaEl = buildVideoEl(item.url);
       container.insertBefore(mediaEl, overlay);
       showOverlay(item);
       mediaEl.onended = advance;
@@ -89,8 +72,8 @@
   }
 
   function showOverlay(item) {
-    msgEl.textContent  = item.message || '';
-    nameEl.textContent = item.name    || '';
+    msgEl.textContent = item.message || '';
+    nameEl.textContent = item.name || '';
     nameEl.style.display = item.name ? '' : 'none';
     overlay.classList.add('visible');
   }
@@ -120,7 +103,6 @@
     if (!item || !item.url || seenKeys.has(key)) return;
     seenKeys.add(key);
 
-    // 插入並保持 createdAt 排序
     queue.push(item);
     queue.sort((a, b) => a.createdAt - b.createdAt);
 
